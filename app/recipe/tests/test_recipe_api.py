@@ -64,7 +64,10 @@ class PrivateRecipeApiTests(TestCase):
 
     def setUp(self):
         self.client = APIClient()
-        self.user = get_user_model().objects.create_user("test@gmail.com", "testpass")
+        self.user = get_user_model().objects.create_user(
+            "test@gmail.com",
+            "testpass"
+        )
         self.client.force_authenticate(self.user)
 
     def test_retrieve_recipes(self):
@@ -82,7 +85,10 @@ class PrivateRecipeApiTests(TestCase):
 
     def test_recipe_limited_to_user(self):
         """Test retrieving recipes for user"""
-        user2 = get_user_model().objects.create_user("other@gmail.com", "otherpass")
+        user2 = get_user_model().objects.create_user(
+            "other@gmail.com",
+            "otherpass"
+        )
         sample_recipe(user=user2)
         sample_recipe(user=self.user)
 
@@ -187,7 +193,11 @@ class PrivateRecipeApiTests(TestCase):
         """Test updating a recipe with put"""
         recipe = sample_recipe(user=self.user)
         recipe.tags.add(sample_tag(user=self.user))
-        payload = {"title": "Spaghetti carbonara", "time_minutes": 25, "price": 5.00}
+        payload = {
+            "title": "Spaghetti carbonara",
+            "time_minutes": 25,
+            "price": 5.00
+        }
 
         url = detail_url(recipe.id)
         self.client.put(url, payload)
@@ -203,7 +213,10 @@ class PrivateRecipeApiTests(TestCase):
 class RecipeImageUploadTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.user = get_user_model().objects.create_user("user@gmail.com", "testpass")
+        self.user = get_user_model().objects.create_user(
+            "user@gmail.com",
+            "testpass"
+        )
         self.client.force_authenticate(self.user)
         self.recipe = sample_recipe(user=self.user)
 
@@ -217,7 +230,12 @@ class RecipeImageUploadTests(TestCase):
             img = Image.new("RGB", (10, 10))
             img.save(ntf, format="JPEG")
             ntf.seek(0)
-            response = self.client.post(url, {"image": ntf}, format="multipart")
+
+            response = self.client.post(
+                url,
+                {"image": ntf},
+                format="multipart",
+            )
 
         self.recipe.refresh_from_db()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -227,6 +245,10 @@ class RecipeImageUploadTests(TestCase):
     def test_upload_image_bad_request(self):
         """Test uploading an invalid image"""
         url = image_upload_url(self.recipe.id)
-        response = self.client.post(url, {"image": "notimage"}, format="multipart")
+        response = self.client.post(
+            url,
+            {"image": "notimage"},
+            format="multipart"
+        )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
